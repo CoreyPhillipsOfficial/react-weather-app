@@ -39,6 +39,17 @@
     cursor: pointer;
 }
 
+.button {
+    justify-content: center;
+    align-items: center;
+    background: #ebfffc;
+    border: none;
+    border-radius: 2px;
+    padding: 8px;
+    margin: 1%;
+    cursor: pointer;
+}
+
 .weather-image {
     margin-top: 29px;
     display: flex;

@@ -13,6 +13,7 @@ import humidity_icon from '../Assets/humidity.png';
 const WeatherApp = () => {
     const api_key = process.env.REACT_APP_API_KEY;
 
+    const [city, setCity] = useState(null);
     const [wicon, setWicon] = useState(cloud_icon);
     const [unit, setUnit] = useState('imperial'); // Default to imperial units
     const [temperature, setTemperature] = useState(null);
@@ -44,6 +45,7 @@ const WeatherApp = () => {
                 unit: unitParam === 'imperial' ? 'm/hr' : 'km/hr',
             });
             setHumidity(data.main.humidity); // Set humidity in state
+            setCity(data.name); // Set the city name in state
 
             // Update weather icon based on received data
             updateWeatherIcon(data.weather[0].icon);
@@ -91,10 +93,11 @@ const WeatherApp = () => {
                 <div className='search-icon' onClick={() => search()}>
                     <img src={search_icon} alt='' />
                 </div>
-                <button onClick={toggleUnit}>
-                    Toggle Unit ({unit === 'imperial' ? '˚F' : '˚C'})
-                </button>
             </div>
+
+            <button onClick={toggleUnit} className='button'>
+                Toggle Unit ({unit === 'imperial' ? '˚F' : '˚C'})
+            </button>
 
             {errorMessage && <div className="error-message">{errorMessage}</div>}
 
@@ -104,7 +107,7 @@ const WeatherApp = () => {
             <div className="weather-temp">
                 {temperature !== null && `${temperature}˚${unit === 'imperial' ? 'F' : 'C'}`}
             </div>
-            <div className="weather-location">City</div>
+            <div className="weather-location">{city !== null && city}</div>
             <div className="data-container">
                 <div className="element">
                     <img src={humidity_icon} alt="" className='icon' />

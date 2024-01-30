@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import './WeatherApp.css'
 
 import search_icon from '../Assets/search.png';
@@ -12,10 +12,14 @@ import humidity_icon from '../Assets/humidity.png';
 
 export const WeatherApp = () => {
 
-    let api_key = 'a9b44091ebf86e0565ff1705218036ba'
+    let api_key = 
     const [wicon, setWicon] = useState(cloud_icon);
     const [unit, setUnit] = useState('imperial'); // Default to imperial units
     const [temperature, setTemperature] = useState(null);
+    const [wind, setWind] = useState({
+        speed: null,
+        unit: 'm/hr', // Default unit for wind speed
+    });
 
     const search = async () => {
         const element = document.getElementsByClassName('cityInput')
@@ -44,6 +48,12 @@ export const WeatherApp = () => {
         temperatureElement[0].innerHTML = Math.floor(data.main.temp) + '˚F';
         location[0].innerHTML = data.name;
 
+        // Set the wind speed and unit in the state
+        setWind({
+            speed: Math.floor(data.wind.speed),
+            unit: unit === 'imperial' ? 'm/hr' : 'km/hr',
+        });
+
         if (data.weather[0].icon === '01d' || data.weather[0].icon === '01n') {
             setWicon(clear_icon);
         }
@@ -70,12 +80,16 @@ export const WeatherApp = () => {
         }
     }
 
+    useEffect(() => {
+        // Call the search function whenever 'unit' changes
+        search();
+    }, [unit]); // Add 'unit' as a dependency
+
     const toggleUnit = () => {
         // Toggle between 'imperial' and 'metric' units
         setUnit(unit === 'imperial' ? 'metric' : 'imperial');
-        // Call the search again with the updated unit
-        search();
     };
+
 
     return (
         <div className='container'>
@@ -94,19 +108,19 @@ export const WeatherApp = () => {
             <div className="weather-temp">
                 {temperature !== null && `${temperature}˚${unit === 'imperial' ? 'F' : 'C'}`}
             </div>
-            <div className="weather-location">London</div>
+            <div className="weather-location">City</div>
             <div className="data-container">
                 <div className="element">
                     <img src={humidity_icon} alt="" className='icon' />
                     <div className="data">
-                        <div className="humidity-percent">64%</div>
+                        <div className="humidity-percent">%</div>
                         <div className="text">Humidity</div>
                     </div>
                 </div>
                 <div className="element">
                     <img src={wind_icon} alt="" className='icon' />
                     <div className="data">
-                        <div className="wind-rate">18 m/hr</div>
+                        <div className="wind-rate">{wind.speed} {wind.unit}</div>
                         <div className="text">Wind Speed</div>
                     </div>
                 </div>

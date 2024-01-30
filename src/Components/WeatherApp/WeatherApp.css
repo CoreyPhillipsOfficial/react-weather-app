@@ -12,6 +12,7 @@
     justify-content: center;
     gap: 14px;
     padding-top: 60px;
+    margin-bottom: 10px;
 }
 
 .top-bar input {
@@ -98,4 +99,51 @@
 
 .icon {
     margin-top: 10px;
+}
+
+@media only screen and (max-width: 650px) {
+    .container {
+        width: 80%;
+        /* Adjust the width for smaller screens */
+        height: auto;
+        /* Allow the height to adjust based on content */
+        margin-top: 30px;
+    }
+
+    .top-bar {
+        flex-direction: column;
+        align-items: center;
+        padding-top: 30px;
+    }
+
+    .top-bar input {
+        width: 70%;
+        margin-bottom: 5px;
+    }
+
+    .search-icon {
+        margin-bottom: 10px;
+    }
+
+    .button {
+        /* width: 100%; */
+    }
+
+    .weather-temp {
+        font-size: 60px;
+    }
+
+    .weather-location {
+        font-size: 30px;
+    }
+
+    .data-container {
+        margin-top: 20px;
+    }
+
+    .element {
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+    }
 }

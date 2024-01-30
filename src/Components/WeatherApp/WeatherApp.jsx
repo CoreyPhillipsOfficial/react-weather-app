@@ -25,6 +25,13 @@ const WeatherApp = () => {
     const [errorMessage, setErrorMessage] = useState(null);
     const [triggerSearch, setTriggerSearch] = useState(false);
 
+    // New state for location details
+    const [locationData, setLocationData] = useState({
+        city: null,
+        state: null,
+        country: null,
+    });
+
     const search = async () => {
         if (searchInput === '') {
             return 0;
@@ -33,20 +40,21 @@ const WeatherApp = () => {
         try {
             let city;
             let stateCode;
+            let countryCode;
 
             if (searchInput.includes(',')) {
-                const [cityPart, statePart] = searchInput.split(',');
+                const [cityPart, statePart, countryPart] = searchInput.split(',');
                 city = cityPart.trim();
-
-                // Extracting state code without spaces
-                stateCode = statePart.trim().replace(/\s/g, '');
+                stateCode = statePart.trim();
+                countryCode = countryPart.trim();
             } else {
                 city = searchInput.trim();
                 stateCode = '';
+                countryCode = '';
             }
 
             const unitParam = unit === 'imperial' ? 'imperial' : 'metric';
-            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&state=${stateCode}&units=${unitParam}&appid=${api_key}`;
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}${stateCode ? ',' + stateCode : ''}${countryCode ? ',' + countryCode : ''}&units=${unitParam}&appid=${api_key}`;
             const response = await fetch(url);
             const data = await response.json();
 
@@ -58,6 +66,15 @@ const WeatherApp = () => {
             });
             setHumidity(data.main.humidity);
             updateWeatherIcon(data.weather[0].icon);
+
+            // Update location data state
+            setLocationData({
+                city: data.name,
+                state: stateCode,
+                country: data.sys.country,
+            });
+
+            setErrorMessage(null);
         } catch (error) {
             console.error("Error fetching weather data:", error);
             setErrorMessage("Failed to fetch weather data. Please try again.");
@@ -107,6 +124,11 @@ const WeatherApp = () => {
                     placeholder='Search a city'
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            setTriggerSearch(true);
+                        }
+                    }}
                 />
                 <div className='search-icon' onClick={() => setTriggerSearch(true)}>
                     <img src={search_icon} alt='' />
@@ -124,7 +146,11 @@ const WeatherApp = () => {
             <div className="weather-temp">
                 {temperature !== null && `${temperature}˚${unit === 'imperial' ? 'F' : 'C'}`}
             </div>
-            <div className="weather-location">City</div>
+            <div className="weather-location">
+                {(locationData.city || locationData.state || locationData.country) && (
+                    <p>{`${locationData.city || ''}${locationData.city && locationData.state ? ', ' : ''}${locationData.state || ''}${(locationData.city || locationData.state) && locationData.country ? ', ' : ''}${locationData.country || ''}`}</p>
+                )}
+            </div>
             <div className="data-container">
                 <div className="element">
                     <img src={humidity_icon} alt="" />
@@ -134,7 +160,7 @@ const WeatherApp = () => {
                     </div>
                 </div>
                 <div className="element">
-                    <img src={wind} alt="" className='icon' />
+                    <img src={wind_icon} alt="" className='icon' />
                     <div className="data">
                         <div className="wind-rate">{wind.speed} {wind.unit}</div>
                         <div className="text">Wind Speed</div>

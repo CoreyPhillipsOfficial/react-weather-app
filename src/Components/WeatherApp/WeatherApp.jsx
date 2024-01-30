@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import './WeatherApp.css'
+import React, { useState, useEffect } from 'react';
+import './WeatherApp.css';
 
 import search_icon from '../Assets/search.png';
 import clear_icon from '../Assets/clear.png';
@@ -10,9 +10,9 @@ import snow_icon from '../Assets/snow.png';
 import wind_icon from '../Assets/wind.png';
 import humidity_icon from '../Assets/humidity.png';
 
-export const WeatherApp = () => {
+const WeatherApp = () => {
+    const api_key = process.env.REACT_APP_API_KEY;
 
-    let api_key = 
     const [wicon, setWicon] = useState(cloud_icon);
     const [unit, setUnit] = useState('imperial'); // Default to imperial units
     const [temperature, setTemperature] = useState(null);
@@ -20,65 +20,39 @@ export const WeatherApp = () => {
         speed: null,
         unit: 'm/hr', // Default unit for wind speed
     });
+    const [humidity, setHumidity] = useState(null);
+
+    const [errorMessage, setErrorMessage] = useState(null);
 
     const search = async () => {
-        const element = document.getElementsByClassName('cityInput')
+        const element = document.getElementsByClassName('cityInput');
         if (element[0].value === '') {
             return 0;
         }
 
-        let url = `https://api.openweathermap.org/data/2.5/weather?q=${element[0].value}&units=${unit}&appid=${api_key}`;
+        try {
+            const unitParam = unit === 'imperial' ? 'imperial' : 'metric';
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${element[0].value}&units=${unitParam}&appid=${api_key}`;
+            const response = await fetch(url);
+            const data = await response.json();
 
-        let response = await fetch(url);
-        let data = await response.json();
-        const humidity = document.getElementsByClassName('humidity-percent');
-        const wind = document.getElementsByClassName('wind-rate');
-        const temperatureElement = document.getElementsByClassName('weather-temp');
-        const location = document.getElementsByClassName('weather-location');
+            // Update state directly instead of manipulating the DOM
+            setTemperature(Math.floor(data.main.temp));
+            setUnit(unitParam); // Always set the received unit
+            setWind({
+                speed: Math.floor(data.wind.speed),
+                unit: unitParam === 'imperial' ? 'm/hr' : 'km/hr',
+            });
+            setHumidity(data.main.humidity); // Set humidity in state
 
-        humidity[0].innerHTML = data.main.humidity + ' %';
-        wind[0].innerHTML = Math.floor(data.wind.speed) + ' m/hr';
+            // Update weather icon based on received data
+            updateWeatherIcon(data.weather[0].icon);
+        } catch (error) {
+            console.error("Error fetching weather data:", error);
+            setErrorMessage("Failed to fetch weather data. Please try again.");
+        }
+    };
 
-        // Set the temperature in the state
-        setTemperature(Math.floor(data.main.temp));
-
-        // Set the temperature unit in the state
-        setUnit(unit);
-
-        temperatureElement[0].innerHTML = Math.floor(data.main.temp) + '˚F';
-        location[0].innerHTML = data.name;
-
-        // Set the wind speed and unit in the state
-        setWind({
-            speed: Math.floor(data.wind.speed),
-            unit: unit === 'imperial' ? 'm/hr' : 'km/hr',
-        });
-
-        if (data.weather[0].icon === '01d' || data.weather[0].icon === '01n') {
-            setWicon(clear_icon);
-        }
-        else if (data.weather[0].icon === '02d' || data.weather[0].icon === '02n') {
-            setWicon(cloud_icon);
-        }
-        else if (data.weather[0].icon === '03d' || data.weather[0].icon === '03n') {
-            setWicon(drizzle_icon);
-        }
-        else if (data.weather[0].icon === '04d' || data.weather[0].icon === '04n') {
-            setWicon(drizzle_icon);
-        }
-        else if (data.weather[0].icon === '09d' || data.weather[0].icon === '09n') {
-            setWicon(rain_icon);
-        }
-        else if (data.weather[0].icon === '10d' || data.weather[0].icon === '10n') {
-            setWicon(cloud_icon);
-        }
-        else if (data.weather[0].icon === '13d' || data.weather[0].icon === '13n') {
-            setWicon(snow_icon);
-        }
-        else {
-            setWicon(clear_icon);
-        }
-    }
 
     useEffect(() => {
         // Call the search function whenever 'unit' changes
@@ -90,6 +64,25 @@ export const WeatherApp = () => {
         setUnit(unit === 'imperial' ? 'metric' : 'imperial');
     };
 
+    const updateWeatherIcon = (iconCode) => {
+        if (iconCode === '01d' || iconCode === '01n') {
+            setWicon(clear_icon);
+        } else if (iconCode === '02d' || iconCode === '02n') {
+            setWicon(cloud_icon);
+        } else if (iconCode === '03d' || iconCode === '03n') {
+            setWicon(drizzle_icon);
+        } else if (iconCode === '04d' || iconCode === '04n') {
+            setWicon(drizzle_icon);
+        } else if (iconCode === '09d' || iconCode === '09n') {
+            setWicon(rain_icon);
+        } else if (iconCode === '10d' || iconCode === '10n') {
+            setWicon(cloud_icon);
+        } else if (iconCode === '13d' || iconCode === '13n') {
+            setWicon(snow_icon);
+        } else {
+            setWicon(clear_icon);
+        }
+    };
 
     return (
         <div className='container'>
@@ -102,6 +95,9 @@ export const WeatherApp = () => {
                     Toggle Unit ({unit === 'imperial' ? '˚F' : '˚C'})
                 </button>
             </div>
+
+            {errorMessage && <div className="error-message">{errorMessage}</div>}
+
             <div className="weather-image">
                 <img src={wicon} alt="" />
             </div>
@@ -113,7 +109,7 @@ export const WeatherApp = () => {
                 <div className="element">
                     <img src={humidity_icon} alt="" className='icon' />
                     <div className="data">
-                        <div className="humidity-percent">%</div>
+                        <div className="humidity-percent">{humidity !== null && `${humidity} %`}</div>
                         <div className="text">Humidity</div>
                     </div>
                 </div>
@@ -126,7 +122,7 @@ export const WeatherApp = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default WeatherApp
+export default WeatherApp;

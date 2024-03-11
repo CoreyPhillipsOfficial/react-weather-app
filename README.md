@@ -1,5 +1,8 @@
 # Weather App ![License](https://img.shields.io/badge/License-MIT-yellow)
 
+## Click <a href="https://corey-simple-weather-app.netlify.app/" style="color:#6495ED;">here</a> to view the deployed application!
+
+
 This is a simple weather application built with React that allows users to search for weather information based on the city, state, and country.
 
 ## Overview
